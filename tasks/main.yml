@@ -1,0 +1,24 @@
+# Installs Amazon's cloudwatch Perl scripts for extra monitoring goodness
+---
+
+- apt: name=unzip state=present 
+
+- apt: name=libwww-perl state=present 
+
+- apt: name=libcrypt-ssleay-perl state=present 
+
+- apt: name=libswitch-perl state=present 
+
+- apt: name=python-pip state=present force=yes
+
+- pip: name=boto state=present
+
+- s3: mode=get aws_access_key="{{ lookup('env','AWS_ACCESS_KEY') }}" aws_secret_key="{{ lookup('env','AWS_SECRET_KEY') }}" bucket=your.bucket.name object=/path/to/CloudWatchMonitoringScripts-v1.1.0.zip dest=/home/ubuntu/CloudWatchMonitoringScripts-v1.1.0.zip overwrite=false
+
+- unarchive: copy=no src=/home/ubuntu/CloudWatchMonitoringScripts-v1.1.0.zip dest=/home/ubuntu
+
+- name: clean up
+  file: dest=/home/ubuntu/CloudWatchMonitoringScripts-v1.1.0.zip state=absent
+
+- cron: name="cloudwatch metrics" minute="*/5" job="/home/ubuntu/aws-scripts-mon/mon-put-instance-data.pl --memory-units=megabytes --mem-util --mem-used --mem-avail --swap-util --swap-used --disk-path=/ --disk-space-units=megabytes --disk-space-avail --from-cron"
+  sudo_user: ubuntu
